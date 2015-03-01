@@ -73,7 +73,7 @@ func checkHTTPMethod(req *http.Request) error {
 	if method := req.Method; method != "POST" {
 		return &RequestError{
 			StatusCode: http.StatusMethodNotAllowed,
-			Message:    fmt.Sprintf("unsupported method: %s", method),
+			Message:    fmt.Sprintf("method not allowed: %s", method),
 		}
 	}
 	return nil
