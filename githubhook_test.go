@@ -277,7 +277,7 @@ func TestRequestError(t *testing.T) {
 		StatusCode: http.StatusTeapot,
 		Message:    http.StatusText(http.StatusTeapot),
 	}
-	err.Error()
+	_ = err.Error()
 }
 
 func testStartHTTPServer(t *testing.T, h *Handler) *net.TCPListener {
