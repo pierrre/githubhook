@@ -12,7 +12,10 @@ before_install:
 install: go get -v -t ./...
 
 script:
-  - go test -v -cover ./...
+  - go test -v -cover -coverprofile=coverage.txt -covermode=atomic
   - gofmt -d .
   - go tool vet .
-  - golint ./...
+  - golint
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
