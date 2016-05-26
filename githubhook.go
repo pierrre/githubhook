@@ -132,7 +132,7 @@ func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) err
 		return err
 	}
 	hash := hmac.New(sha1.New, []byte(h.Secret))
-	hash.Write(rawPayload)
+	_, _ = hash.Write(rawPayload)
 	expectedMAC := hash.Sum(nil)
 	if !hmac.Equal(requestMAC, expectedMAC) {
 		return fmt.Errorf("doesn't match secret")
