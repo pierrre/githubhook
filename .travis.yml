@@ -9,4 +9,6 @@ go:
 
 install: go get -v -d -t
 
-script: make
+script:
+  - make test
+  - make lint
