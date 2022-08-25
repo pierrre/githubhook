@@ -3,11 +3,12 @@ package githubhook
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
+	"crypto/sha1" //nolint:gosec // Github uses SHA1.
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -18,15 +19,15 @@ Handler is a HTTP Handler for GitHub webhook.
 It supports both JSON and form content types.
 
 Fields (all are optional):
- - Secret is the secret defined in GitHub webhook.
- - DecodePayload is called to decode payload. If it's not defined, JSON unmarshal is used.
- - Delivery is called if a valid delivery is received.
- - Error is called if an error happened.
+  - Secret is the secret defined in GitHub webhook.
+  - DecodePayload is called to decode payload. If it's not defined, JSON unmarshal is used.
+  - Delivery is called if a valid delivery is received.
+  - Error is called if an error happened.
 */
 type Handler struct {
 	Secret        string
 	DecodePayload func(event string, rawPayload []byte) (interface{}, error)
-	Delivery      func(event string, deliveryID string, payload interface{})
+	Delivery      func(event, deliveryID string, payload interface{})
 	Error         func(err error, req *http.Request)
 }
 
@@ -82,7 +83,11 @@ func checkHTTPMethod(req *http.Request) error {
 func getRawPayload(req *http.Request) ([]byte, error) {
 	switch t := req.Header.Get("Content-Type"); t {
 	case "application/json":
-		return ioutil.ReadAll(req.Body)
+		b, err := io.ReadAll(req.Body)
+		if err != nil {
+			return nil, fmt.Errorf("read body: %w", err)
+		}
+		return b, nil
 	case "application/x-www-form-urlencoded":
 		return []byte(req.PostFormValue("payload")), nil
 	default:
@@ -129,7 +134,7 @@ func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) err
 	signature = strings.TrimPrefix(signature, "sha1=")
 	requestMAC, err := hex.DecodeString(signature)
 	if err != nil {
-		return err
+		return fmt.Errorf("decode hex: %w", err)
 	}
 	hash := hmac.New(sha1.New, []byte(h.Secret))
 	_, _ = hash.Write(rawPayload)
@@ -160,11 +165,11 @@ func (h *Handler) decodePayload(event string, rawPayload []byte) (interface{}, e
 func (h *Handler) handleError(err error, w http.ResponseWriter, req *http.Request) {
 	var statusCode int
 	var message string
-	switch err := err.(type) {
-	case *RequestError:
-		statusCode = err.StatusCode
-		message = err.Message
-	default:
+	var reqErr *RequestError
+	if errors.As(err, &reqErr) {
+		statusCode = reqErr.StatusCode
+		message = reqErr.Message
+	} else {
 		statusCode = http.StatusInternalServerError
 		message = http.StatusText(statusCode)
 	}
@@ -174,7 +179,7 @@ func (h *Handler) handleError(err error, w http.ResponseWriter, req *http.Reques
 	}
 }
 
-// RequestError represents a request error
+// RequestError represents a request error.
 type RequestError struct {
 	StatusCode int
 	Message    string
