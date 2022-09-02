@@ -27,7 +27,7 @@ Fields (all are optional):
 type Handler struct {
 	Secret        string
 	DecodePayload func(event string, rawPayload []byte) (interface{}, error)
-	Delivery      func(event, deliveryID string, payload interface{})
+	Delivery      func(event string, deliveryID string, payload interface{})
 	Error         func(err error, req *http.Request)
 }
 

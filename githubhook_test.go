@@ -76,7 +76,7 @@ func TestHandlerDelivery(t *testing.T) {
 	ctx := context.Background()
 	deliveryCalled := false
 	h := &Handler{
-		Delivery: func(event, deliveryId string, payload interface{}) {
+		Delivery: func(event string, deliveryId string, payload interface{}) {
 			deliveryCalled = true
 		},
 	}
