@@ -26,8 +26,8 @@ Fields (all are optional):
 */
 type Handler struct {
 	Secret        string
-	DecodePayload func(event string, rawPayload []byte) (interface{}, error)
-	Delivery      func(event string, deliveryID string, payload interface{})
+	DecodePayload func(event string, rawPayload []byte) (any, error)
+	Delivery      func(event string, deliveryID string, payload any)
 	Error         func(err error, req *http.Request)
 }
 
@@ -145,8 +145,8 @@ func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) err
 	return nil
 }
 
-func (h *Handler) decodePayload(event string, rawPayload []byte) (interface{}, error) {
-	var payload interface{}
+func (h *Handler) decodePayload(event string, rawPayload []byte) (any, error) {
+	var payload any
 	var err error
 	if h.DecodePayload != nil {
 		payload, err = h.DecodePayload(event, rawPayload)

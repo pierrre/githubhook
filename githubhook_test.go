@@ -76,7 +76,7 @@ func TestHandlerDelivery(t *testing.T) {
 	ctx := context.Background()
 	deliveryCalled := false
 	h := &Handler{
-		Delivery: func(event string, deliveryId string, payload interface{}) {
+		Delivery: func(event string, deliveryId string, payload any) {
 			deliveryCalled = true
 		},
 	}
@@ -100,7 +100,7 @@ func TestHandlerDecodePayload(t *testing.T) {
 	ctx := context.Background()
 	decodePayloadCalled := false
 	h := &Handler{
-		DecodePayload: func(event string, rawPayload []byte) (interface{}, error) {
+		DecodePayload: func(event string, rawPayload []byte) (any, error) {
 			decodePayloadCalled = true
 			return string(rawPayload), nil
 		},
