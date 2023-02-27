@@ -14,7 +14,18 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/pierrre/assert"
+	"github.com/pierrre/assert/ext/davecghspew"
+	"github.com/pierrre/assert/ext/pierrrecompare"
+	"github.com/pierrre/assert/ext/pierrreerrors"
 )
+
+func init() {
+	pierrrecompare.Configure()
+	davecghspew.ConfigureDefault()
+	pierrreerrors.Configure()
+}
 
 var testRawPayload = []byte(`{"foo":"bar"}`)
 
@@ -25,9 +36,7 @@ func TestHandlerJSON(t *testing.T) {
 	defer srv.Close()
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -45,9 +54,7 @@ func TestHandlerForm(t *testing.T) {
 	form.Set("payload", string(testRawPayload))
 	req.Body = io.NopCloser(strings.NewReader(form.Encode()))
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -63,9 +70,7 @@ func TestHandlerSecret(t *testing.T) {
 	defer srv.Close()
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -84,16 +89,12 @@ func TestHandlerDelivery(t *testing.T) {
 	defer srv.Close()
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 	testExpectResponseStatusOK(t, resp)
-	if !deliveryCalled {
-		t.Fatal("delivery not called")
-	}
+	assert.True(t, deliveryCalled)
 }
 
 func TestHandlerDecodePayload(t *testing.T) {
@@ -109,16 +110,12 @@ func TestHandlerDecodePayload(t *testing.T) {
 	defer srv.Close()
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 	testExpectResponseStatusOK(t, resp)
-	if !decodePayloadCalled {
-		t.Fatal("decode payload not called")
-	}
+	assert.True(t, decodePayloadCalled)
 }
 
 func TestHandlerError(t *testing.T) {
@@ -132,20 +129,14 @@ func TestHandlerError(t *testing.T) {
 	srv := httptest.NewServer(h)
 	defer srv.Close()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL, http.NoBody)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
 	testExpectResponseStatus(t, resp, http.StatusMethodNotAllowed)
-	if !errorCalled {
-		t.Fatal("error not called")
-	}
+	assert.True(t, errorCalled)
 }
 
 func TestHandlerErrorMethod(t *testing.T) {
@@ -154,13 +145,9 @@ func TestHandlerErrorMethod(t *testing.T) {
 	srv := httptest.NewServer(h)
 	defer srv.Close()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, srv.URL, http.NoBody)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -175,9 +162,7 @@ func TestHandlerErrorHeaderEvent(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	req.Header.Del("X-GitHub-Event")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -192,9 +177,7 @@ func TestHandlerErrorHeaderDelivery(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	req.Header.Del("X-GitHub-Delivery")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -209,9 +192,7 @@ func TestHandlerErrorHeaderContentType(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
 	req.Header.Set("Content-Type", "foobar")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -228,9 +209,7 @@ func TestHandlerErrorHeaderSignature(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
 	req.Header.Del("X-Hub-Signature")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -247,9 +226,7 @@ func TestHandlerErrorHeaderSignatureFormat(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
 	req.Header.Set("X-Hub-Signature", "foobar")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -266,9 +243,7 @@ func TestHandlerErrorHeaderSignatureHex(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
 	req.Header.Set("X-Hub-Signature", "sha1=zz")
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -285,9 +260,7 @@ func TestHandlerErrorHeaderSignatureSecret(t *testing.T) {
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
 	testSignRequest(req, "wrong", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -302,9 +275,7 @@ func TestHandlerErrorDecodePayload(t *testing.T) {
 	rawPayload := []byte("not json")
 	req := testNewJSONRequest(ctx, t, srv, h.Secret, rawPayload)
 	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer func() {
 		_ = resp.Body.Close()
 	}()
@@ -315,14 +286,10 @@ func TestHandlerErrorInternal(t *testing.T) {
 	ctx := context.Background()
 	w := httptest.NewRecorder()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", http.NoBody)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	h := &Handler{}
 	h.handleError(fmt.Errorf("internal error"), w, req)
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("unexpected HTTP status code: %d (expected %d)", w.Code, http.StatusInternalServerError)
-	}
+	assert.Equal(t, w.Code, http.StatusInternalServerError)
 }
 
 func TestRequestError(t *testing.T) {
@@ -344,9 +311,7 @@ func testNewJSONRequest(ctx context.Context, t *testing.T, srv *httptest.Server,
 func testNewRequest(ctx context.Context, t *testing.T, srv *httptest.Server, secret string, rawPayload []byte) *http.Request {
 	t.Helper()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL, http.NoBody)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	req.Header.Set("X-GitHub-Event", "push")
 	req.Header.Set("X-GitHub-Delivery", testGetRandomDeliveryID(t))
 	if secret != "" {
@@ -368,26 +333,20 @@ func testGetRandomDeliveryID(t *testing.T) string {
 	t.Helper()
 	buf := make([]byte, 16)
 	_, err := io.ReadFull(rand.Reader, buf)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 	return hex.EncodeToString(buf)
 }
 
 func testExpectResponseStatusOK(t *testing.T, resp *http.Response) {
 	t.Helper()
-	if resp.StatusCode != http.StatusOK {
+	assert.Equal(t, http.StatusOK, resp.StatusCode, assert.MessageTransform(func(msg string) string {
 		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Fatalf("unexpected HTTP status code: %d: %s", resp.StatusCode, string(body))
-	}
+		assert.NoError(t, err)
+		return fmt.Sprintf("body=%s\n%s", string(body), msg)
+	}))
 }
 
 func testExpectResponseStatus(t *testing.T, resp *http.Response, statusCode int) {
 	t.Helper()
-	if resp.StatusCode != statusCode {
-		t.Fatalf("unexpected HTTP status code: %d (expected %d)", resp.StatusCode, statusCode)
-	}
+	assert.Equal(t, statusCode, resp.StatusCode)
 }
