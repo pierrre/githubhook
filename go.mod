@@ -2,7 +2,7 @@ module github.com/pierrre/githubhook
 
 go 1.20
 
-require github.com/pierrre/assert v0.1.1
+require github.com/pierrre/assert v0.1.2
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
