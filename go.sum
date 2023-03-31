@@ -6,7 +6,7 @@ github.com/pierrre/compare v1.1.3 h1:9dGVdOvvyCf7ixBLn+ppt0cubt6wiM0238m6jX7CV8c
 github.com/pierrre/compare v1.1.3/go.mod h1:ggOLJkLr6kRdZHxz1x+CIAjOySDFBhC32pPXSyNqEsI=
 github.com/pierrre/errors v0.3.3 h1:cIc8Ttq2E1c/he4ZexJXtjhrSzjLKWQIC20EqRYnwjo=
 github.com/pierrre/errors v0.3.3/go.mod h1:CVJPzyjyrOOMLpv8G2cZgCo/th364G/Vkf1wkDoBAyw=
-github.com/pierrre/go-libs v0.0.3 h1:M232FuUtGbwTA4IT4/u08kaXtSIMtpjcbJ0ZQAYGAyo=
-github.com/pierrre/go-libs v0.0.3/go.mod h1:aMekcBxJeLFawa7hdvt4E63y5Wb+c/JLCSho9SHGaoc=
+github.com/pierrre/go-libs v0.1.0 h1:Q1BqBSyOPQtImz9Z8DtHqc1u/+zE1iqczeU/F5JEO9k=
+github.com/pierrre/go-libs v0.1.0/go.mod h1:ktGcXm3BdeY+LDmEckecuOVBNpP6WpKpmAh79qfV3qE=
 golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2 h1:Jvc7gsqn21cJHCmAWx0LiimpP18LZmUxkT5Mp7EZ1mI=
 golang.org/x/exp v0.0.0-20230224173230-c95f2b4c22f2/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
