@@ -14,7 +14,7 @@ import (
 )
 
 /*
-Handler is a HTTP Handler for GitHub webhook.
+Handler is a [http.Handler] for GitHub webhook.
 
 It supports both JSON and form content types.
 
