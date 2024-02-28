@@ -74,7 +74,7 @@ func checkHTTPMethod(req *http.Request) error {
 	if method := req.Method; method != "POST" {
 		return &RequestError{
 			StatusCode: http.StatusMethodNotAllowed,
-			Message:    fmt.Sprintf("method not allowed: %s", method),
+			Message:    "method not allowed: " + method,
 		}
 	}
 	return nil
@@ -93,7 +93,7 @@ func getRawPayload(req *http.Request) ([]byte, error) {
 	default:
 		return nil, &RequestError{
 			StatusCode: http.StatusBadRequest,
-			Message:    fmt.Sprintf("invalid content type: %s", t),
+			Message:    "invalid content type: " + t,
 		}
 	}
 }
@@ -103,7 +103,7 @@ func requireHeader(name string, req *http.Request) (string, error) {
 	if hd == "" {
 		return "", &RequestError{
 			StatusCode: http.StatusBadRequest,
-			Message:    fmt.Sprintf("missing header: %s", name),
+			Message:    "missing header: " + name,
 		}
 	}
 	return hd, nil
@@ -129,7 +129,7 @@ func (h *Handler) checkSignature(rawPayload []byte, req *http.Request) error {
 
 func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) error {
 	if !strings.HasPrefix(signature, "sha1=") {
-		return fmt.Errorf("format")
+		return errors.New("format")
 	}
 	signature = strings.TrimPrefix(signature, "sha1=")
 	requestMAC, err := hex.DecodeString(signature)
@@ -140,7 +140,7 @@ func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) err
 	_, _ = hash.Write(rawPayload)
 	expectedMAC := hash.Sum(nil)
 	if !hmac.Equal(requestMAC, expectedMAC) {
-		return fmt.Errorf("doesn't match secret")
+		return errors.New("doesn't match secret")
 	}
 	return nil
 }

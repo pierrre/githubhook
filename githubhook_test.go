@@ -7,6 +7,7 @@ import (
 	"crypto/rand"
 	"crypto/sha1" //nolint:gosec // Github uses SHA1.
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -279,7 +280,7 @@ func TestHandlerErrorInternal(t *testing.T) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", http.NoBody)
 	assert.NoError(t, err)
 	h := &Handler{}
-	h.handleError(fmt.Errorf("internal error"), w, req)
+	h.handleError(errors.New("internal error"), w, req)
 	assert.Equal(t, w.Code, http.StatusInternalServerError)
 }
 
@@ -316,7 +317,7 @@ func testSignRequest(req *http.Request, secret string, rawPayload []byte) {
 	_, _ = hash.Write(rawPayload)
 	mac := hash.Sum(nil)
 	signature := hex.EncodeToString(mac)
-	signature = fmt.Sprintf("sha1=%s", signature)
+	signature = "sha1=" + signature
 	req.Header.Set("X-Hub-Signature", signature)
 }
 
