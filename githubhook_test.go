@@ -22,7 +22,7 @@ import (
 var testRawPayload = []byte(`{"foo":"bar"}`)
 
 func TestHandlerJSON(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -36,7 +36,7 @@ func TestHandlerJSON(t *testing.T) {
 }
 
 func TestHandlerForm(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -54,7 +54,7 @@ func TestHandlerForm(t *testing.T) {
 }
 
 func TestHandlerSecret(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{
 		Secret: "foobar",
 	}
@@ -70,7 +70,7 @@ func TestHandlerSecret(t *testing.T) {
 }
 
 func TestHandlerDelivery(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	deliveryCalled := false
 	h := &Handler{
 		Delivery: func(event string, deliveryId string, payload any) {
@@ -90,7 +90,7 @@ func TestHandlerDelivery(t *testing.T) {
 }
 
 func TestHandlerDecodePayload(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	decodePayloadCalled := false
 	h := &Handler{
 		DecodePayload: func(event string, rawPayload []byte) (any, error) {
@@ -111,7 +111,7 @@ func TestHandlerDecodePayload(t *testing.T) {
 }
 
 func TestHandlerError(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	errorCalled := false
 	h := &Handler{
 		Error: func(err error, req *http.Request) {
@@ -132,7 +132,7 @@ func TestHandlerError(t *testing.T) {
 }
 
 func TestHandlerErrorMethod(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -147,7 +147,7 @@ func TestHandlerErrorMethod(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderEvent(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -162,7 +162,7 @@ func TestHandlerErrorHeaderEvent(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderDelivery(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -177,7 +177,7 @@ func TestHandlerErrorHeaderDelivery(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderContentType(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -192,7 +192,7 @@ func TestHandlerErrorHeaderContentType(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderSignature(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{
 		Secret: "foobar",
 	}
@@ -209,7 +209,7 @@ func TestHandlerErrorHeaderSignature(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderSignatureFormat(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{
 		Secret: "foobar",
 	}
@@ -226,7 +226,7 @@ func TestHandlerErrorHeaderSignatureFormat(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderSignatureHex(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{
 		Secret: "foobar",
 	}
@@ -243,7 +243,7 @@ func TestHandlerErrorHeaderSignatureHex(t *testing.T) {
 }
 
 func TestHandlerErrorHeaderSignatureSecret(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{
 		Secret: "foobar",
 	}
@@ -260,7 +260,7 @@ func TestHandlerErrorHeaderSignatureSecret(t *testing.T) {
 }
 
 func TestHandlerErrorDecodePayload(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
@@ -275,7 +275,7 @@ func TestHandlerErrorDecodePayload(t *testing.T) {
 }
 
 func TestHandlerErrorInternal(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	w := httptest.NewRecorder()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost", http.NoBody)
 	assert.NoError(t, err)
