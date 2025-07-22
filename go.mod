@@ -9,5 +9,5 @@ require github.com/pierrre/assert v0.9.0
 require (
 	github.com/pierrre/compare v1.4.13 // indirect
 	github.com/pierrre/go-libs v0.21.2 // indirect
-	github.com/pierrre/pretty v0.18.8 // indirect
+	github.com/pierrre/pretty v0.18.9 // indirect
 )
