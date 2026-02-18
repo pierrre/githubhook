@@ -1,6 +1,6 @@
 module github.com/pierrre/githubhook
 
-go 1.25.0
+go 1.26.0
 
 require github.com/pierrre/assert v0.11.1
 
