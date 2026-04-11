@@ -1,4 +1,4 @@
-// Package githubhook provides a HTTP Handler for GitHub webhook.
+// Package githubhook provides an HTTP handler for GitHub webhooks.
 package githubhook
 
 import (
@@ -14,12 +14,12 @@ import (
 )
 
 /*
-Handler is a [http.Handler] for GitHub webhook.
+Handler is an [http.Handler] for GitHub webhooks.
 
 It supports both JSON and form content types.
 
 Fields (all are optional):
-  - Secret is the secret defined in GitHub webhook.
+  - Secret is the secret configured in the GitHub webhook.
   - DecodePayload is called to decode payload. If it's not defined, JSON unmarshal is used.
   - Delivery is called if a valid delivery is received.
   - Error is called if an error happened.
