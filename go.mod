@@ -2,7 +2,7 @@ module github.com/pierrre/githubhook
 
 go 1.26.0
 
-require github.com/pierrre/assert v0.13.0
+require github.com/pierrre/assert v0.13.2
 
 require (
 	github.com/pierrre/compare v1.4.15 // indirect
