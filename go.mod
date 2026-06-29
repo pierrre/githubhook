@@ -6,6 +6,6 @@ require github.com/pierrre/assert v0.13.6
 
 require (
 	github.com/pierrre/compare v1.4.15 // indirect
-	github.com/pierrre/go-libs v0.31.8 // indirect
+	github.com/pierrre/go-libs v0.32.0 // indirect
 	github.com/pierrre/pretty v0.25.0 // indirect
 )
