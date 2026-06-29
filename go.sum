@@ -1,5 +1,5 @@
-github.com/pierrre/assert v0.13.6 h1:iAwe0Rw/RUjCtyDy9Du/ibzghKXTxmEHY9WZRF5OYnQ=
-github.com/pierrre/assert v0.13.6/go.mod h1:I+0pgRjAdHyg0IK1bGp1Y93lKrC9kzjVVnzIIr3hCqI=
+github.com/pierrre/assert v0.14.0 h1:2hc0qEEWyktoh/PyPVPyYihrSkEU6RdsrEc60LrpAvE=
+github.com/pierrre/assert v0.14.0/go.mod h1:+5MI/gZOgHWt4v8SWoVWx9V4CN2xkQZaoJLD43SyMe0=
 github.com/pierrre/compare v1.4.15 h1:ZYzDSe6D07cj54erJHXXBE2Ot9GPM5VnTOhVrvXe74M=
 github.com/pierrre/compare v1.4.15/go.mod h1:WHIREzz9xDNMzyIIp+RyZULubskCL/Vj6nnrd5Xwml8=
 github.com/pierrre/go-libs v0.32.0 h1:2zP02OZAFQ1Hioyh256Suy6nOzBAlXrFaC72XNy82qM=
