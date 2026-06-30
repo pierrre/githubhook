@@ -5,7 +5,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/rand"
-	"crypto/sha1" //nolint:gosec // Github uses SHA1.
+	"crypto/sha1" //nolint:gosec // GitHub uses SHA1.
 	"encoding/hex"
 	"errors"
 	"fmt"

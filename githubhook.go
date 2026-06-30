@@ -3,7 +3,7 @@ package githubhook
 
 import (
 	"crypto/hmac"
-	"crypto/sha1" //nolint:gosec // Github uses SHA1.
+	"crypto/sha1" //nolint:gosec // GitHub uses SHA1.
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -20,9 +20,9 @@ It supports both JSON and form content types.
 
 Fields (all are optional):
   - Secret is the secret configured in the GitHub webhook.
-  - DecodePayload is called to decode payload. If it's not defined, JSON unmarshal is used.
+  - DecodePayload is called to decode the payload. If it's not defined, JSON unmarshal is used.
   - Delivery is called if a valid delivery is received.
-  - Error is called if an error happened.
+  - Error is called if an error occurs.
 */
 type Handler struct {
 	Secret        string
