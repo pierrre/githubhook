@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+const defaultMaxBodySize int64 = 25 << 20
+
 /*
 Handler is an [http.Handler] for GitHub webhooks.
 
@@ -20,18 +22,25 @@ It supports both JSON and form content types.
 
 Fields (all are optional):
   - Secret is the secret configured in the GitHub webhook.
+  - MaxBodySize is the maximum allowed size of the request body in bytes. If it is less than or equal to 0, a default of 25 MB is used.
   - DecodePayload is called to decode the payload. If it's not defined, JSON unmarshal is used.
   - Delivery is called if a valid delivery is received.
   - Error is called if an error occurs.
 */
 type Handler struct {
 	Secret        string
+	MaxBodySize   int64
 	DecodePayload func(event string, rawPayload []byte) (any, error)
 	Delivery      func(event string, deliveryID string, payload any)
 	Error         func(err error, req *http.Request)
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	maxBodySize := h.MaxBodySize
+	if maxBodySize <= 0 {
+		maxBodySize = defaultMaxBodySize
+	}
+	req.Body = http.MaxBytesReader(w, req.Body, maxBodySize)
 	err := h.handleRequest(req)
 	if err != nil {
 		h.handleError(err, w, req)
@@ -85,6 +94,13 @@ func getRawPayload(req *http.Request) ([]byte, error) {
 	case "application/json":
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
+			var maxBytesErr *http.MaxBytesError
+			if errors.As(err, &maxBytesErr) {
+				return nil, &RequestError{
+					StatusCode: http.StatusRequestEntityTooLarge,
+					Message:    "body too large",
+				}
+			}
 			return nil, fmt.Errorf("read body: %w", err)
 		}
 		return b, nil

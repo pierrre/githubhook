@@ -10,3 +10,4 @@ GitHub webhook HTTP Handler in Go (Golang)
 - Secret validation
 - JSON or form content type
 - Custom payload decoding
+- Configurable max body size

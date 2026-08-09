@@ -26,7 +26,7 @@ func TestHandlerJSON(t *testing.T) {
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	defer func() {
@@ -40,7 +40,7 @@ func TestHandlerForm(t *testing.T) {
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewRequest(ctx, t, srv.URL, "", testRawPayload)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	form := make(url.Values)
 	form.Set("payload", string(testRawPayload))
@@ -60,7 +60,7 @@ func TestHandlerSecret(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	defer func() {
@@ -79,7 +79,7 @@ func TestHandlerDelivery(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	defer func() {
@@ -100,7 +100,7 @@ func TestHandlerDecodePayload(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	defer func() {
@@ -151,7 +151,7 @@ func TestHandlerErrorHeaderEvent(t *testing.T) {
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	req.Header.Del("X-GitHub-Event")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -166,7 +166,7 @@ func TestHandlerErrorHeaderDelivery(t *testing.T) {
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	req.Header.Del("X-GitHub-Delivery")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -181,7 +181,7 @@ func TestHandlerErrorHeaderContentType(t *testing.T) {
 	h := &Handler{}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, "", testRawPayload)
 	req.Header.Set("Content-Type", "foobar")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -198,7 +198,7 @@ func TestHandlerErrorHeaderSignature(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, testRawPayload)
 	req.Header.Del("X-Hub-Signature")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -215,7 +215,7 @@ func TestHandlerErrorHeaderSignatureFormat(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, testRawPayload)
 	req.Header.Set("X-Hub-Signature", "foobar")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -232,7 +232,7 @@ func TestHandlerErrorHeaderSignatureHex(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, testRawPayload)
 	req.Header.Set("X-Hub-Signature", "sha1=zz")
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -249,7 +249,7 @@ func TestHandlerErrorHeaderSignatureSecret(t *testing.T) {
 	}
 	srv := httptest.NewServer(h)
 	defer srv.Close()
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, testRawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, testRawPayload)
 	testSignRequest(req, "wrong", testRawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
@@ -265,7 +265,7 @@ func TestHandlerErrorDecodePayload(t *testing.T) {
 	srv := httptest.NewServer(h)
 	defer srv.Close()
 	rawPayload := []byte("not json")
-	req := testNewJSONRequest(ctx, t, srv, h.Secret, rawPayload)
+	req := testNewJSONRequest(ctx, t, srv.URL, h.Secret, rawPayload)
 	resp, err := http.DefaultClient.Do(req)
 	assert.NoError(t, err)
 	defer func() {
@@ -284,6 +284,54 @@ func TestHandlerErrorInternal(t *testing.T) {
 	assert.Equal(t, w.Code, http.StatusInternalServerError)
 }
 
+func TestHandlerMaxBodySize(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret:      "foobar",
+		MaxBodySize: int64(len(testRawPayload)),
+	}
+	w := httptest.NewRecorder()
+	req := testNewJSONRequest(ctx, t, "http://localhost", h.Secret, testRawPayload)
+	h.ServeHTTP(w, req)
+	testExpectRecorderStatus(t, w, http.StatusOK)
+}
+
+func TestHandlerMaxBodySizeExceeded(t *testing.T) {
+	ctx := t.Context()
+	errorCalled := false
+	h := &Handler{
+		MaxBodySize: 4,
+		Error: func(err error, req *http.Request) {
+			errorCalled = true
+		},
+	}
+	w := httptest.NewRecorder()
+	req := testNewJSONRequest(ctx, t, "http://localhost", "", testRawPayload)
+	h.ServeHTTP(w, req)
+	testExpectRecorderStatus(t, w, http.StatusRequestEntityTooLarge)
+	assert.True(t, errorCalled)
+}
+
+func TestHandlerBodyReadError(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{}
+	w := httptest.NewRecorder()
+	req := testNewJSONRequest(ctx, t, "http://localhost", "", testRawPayload)
+	req.Body = testFailingBody{}
+	h.ServeHTTP(w, req)
+	testExpectRecorderStatus(t, w, http.StatusInternalServerError)
+}
+
+type testFailingBody struct{}
+
+func (testFailingBody) Read(p []byte) (int, error) {
+	return 0, errors.New("read failed")
+}
+
+func (testFailingBody) Close() error {
+	return nil
+}
+
 func TestRequestError(t *testing.T) {
 	err := &RequestError{
 		StatusCode: http.StatusTeapot,
@@ -292,17 +340,17 @@ func TestRequestError(t *testing.T) {
 	_ = err.Error()
 }
 
-func testNewJSONRequest(ctx context.Context, t *testing.T, srv *httptest.Server, secret string, rawPayload []byte) *http.Request {
+func testNewJSONRequest(ctx context.Context, t *testing.T, srvURL string, secret string, rawPayload []byte) *http.Request {
 	t.Helper()
-	req := testNewRequest(ctx, t, srv, secret, rawPayload)
+	req := testNewRequest(ctx, t, srvURL, secret, rawPayload)
 	req.Header.Set("Content-Type", "application/json")
 	req.Body = io.NopCloser(bytes.NewReader(rawPayload))
 	return req
 }
 
-func testNewRequest(ctx context.Context, t *testing.T, srv *httptest.Server, secret string, rawPayload []byte) *http.Request {
+func testNewRequest(ctx context.Context, t *testing.T, srvURL string, secret string, rawPayload []byte) *http.Request {
 	t.Helper()
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, srv.URL, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, srvURL, http.NoBody)
 	assert.NoError(t, err)
 	req.Header.Set("X-GitHub-Event", "push")
 	req.Header.Set("X-GitHub-Delivery", testGetRandomDeliveryID(t))
@@ -341,4 +389,9 @@ func testExpectResponseStatusOK(t *testing.T, resp *http.Response) {
 func testExpectResponseStatus(t *testing.T, resp *http.Response, statusCode int) {
 	t.Helper()
 	assert.Equal(t, statusCode, resp.StatusCode)
+}
+
+func testExpectRecorderStatus(t *testing.T, w *httptest.ResponseRecorder, statusCode int) {
+	t.Helper()
+	assert.Equal(t, statusCode, w.Code)
 }
