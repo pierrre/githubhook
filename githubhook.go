@@ -4,10 +4,12 @@ package githubhook
 import (
 	"crypto/hmac"
 	"crypto/sha1" //nolint:gosec // GitHub uses SHA1.
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"net/http"
 	"strings"
@@ -113,32 +115,39 @@ func (h *Handler) checkSignature(rawPayload []byte, req *http.Request) error {
 	if h.Secret == "" {
 		return nil
 	}
+	if signature := req.Header.Get("X-Hub-Signature-256"); signature != "" {
+		return h.checkSignatureHeader(rawPayload, "X-Hub-Signature-256", signature, sha256.New, "sha256=")
+	}
 	signature, err := requireHeader("X-Hub-Signature", req)
 	if err != nil {
 		return err
 	}
-	err = h.checkSignaturePayload(rawPayload, signature)
+	return h.checkSignatureHeader(rawPayload, "X-Hub-Signature", signature, sha1.New, "sha1=")
+}
+
+func (h *Handler) checkSignatureHeader(rawPayload []byte, headerName, signature string, hashFunc func() hash.Hash, prefix string) error {
+	err := h.checkSignaturePayload(rawPayload, signature, hashFunc, prefix)
 	if err != nil {
 		return &RequestError{
 			StatusCode: http.StatusBadRequest,
-			Message:    fmt.Sprintf("invalid header X-Hub-Signature: %s", err),
+			Message:    fmt.Sprintf("invalid header %s: %s", headerName, err),
 		}
 	}
 	return nil
 }
 
-func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string) error {
-	if !strings.HasPrefix(signature, "sha1=") {
+func (h *Handler) checkSignaturePayload(rawPayload []byte, signature string, hashFunc func() hash.Hash, prefix string) error {
+	if !strings.HasPrefix(signature, prefix) {
 		return errors.New("format")
 	}
-	signature = strings.TrimPrefix(signature, "sha1=")
+	signature = strings.TrimPrefix(signature, prefix)
 	requestMAC, err := hex.DecodeString(signature)
 	if err != nil {
 		return fmt.Errorf("decode hex: %w", err)
 	}
-	hash := hmac.New(sha1.New, []byte(h.Secret))
-	_, _ = hash.Write(rawPayload)
-	expectedMAC := hash.Sum(nil)
+	macHash := hmac.New(hashFunc, []byte(h.Secret))
+	_, _ = macHash.Write(rawPayload)
+	expectedMAC := macHash.Sum(nil)
 	if !hmac.Equal(requestMAC, expectedMAC) {
 		return errors.New("doesn't match secret")
 	}

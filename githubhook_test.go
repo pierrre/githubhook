@@ -6,9 +6,11 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha1" //nolint:gosec // GitHub uses SHA1.
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"hash"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -259,6 +261,110 @@ func TestHandlerErrorHeaderSignatureSecret(t *testing.T) {
 	testExpectResponseStatus(t, resp, http.StatusBadRequest)
 }
 
+func TestHandlerSecretSHA256(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	testSignRequest256(req, h.Secret, testRawPayload)
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatusOK(t, resp)
+}
+
+func TestHandlerSecretSHA256Preferred(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	testSignRequest256(req, h.Secret, testRawPayload)
+	testSignRequest(req, "wrong", testRawPayload)
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatusOK(t, resp)
+}
+
+func TestHandlerErrorHeaderSignatureSHA256Format(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req.Header.Set("X-Hub-Signature-256", "foobar")
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatus(t, resp, http.StatusBadRequest)
+}
+
+func TestHandlerErrorHeaderSignatureSHA256Hex(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	req.Header.Set("X-Hub-Signature-256", "sha256=zz")
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatus(t, resp, http.StatusBadRequest)
+}
+
+func TestHandlerErrorHeaderSignatureSHA256Secret(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	testSignRequest256(req, "wrong", testRawPayload)
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatus(t, resp, http.StatusBadRequest)
+}
+
+func TestHandlerErrorHeaderSignatureSHA256Preferred(t *testing.T) {
+	ctx := t.Context()
+	h := &Handler{
+		Secret: "foobar",
+	}
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	req := testNewJSONRequest(ctx, t, srv, "", testRawPayload)
+	testSignRequest256(req, "wrong", testRawPayload)
+	testSignRequest(req, h.Secret, testRawPayload)
+	resp, err := http.DefaultClient.Do(req)
+	assert.NoError(t, err)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	testExpectResponseStatus(t, resp, http.StatusBadRequest)
+}
+
 func TestHandlerErrorDecodePayload(t *testing.T) {
 	ctx := t.Context()
 	h := &Handler{}
@@ -313,12 +419,19 @@ func testNewRequest(ctx context.Context, t *testing.T, srv *httptest.Server, sec
 }
 
 func testSignRequest(req *http.Request, secret string, rawPayload []byte) {
-	hash := hmac.New(sha1.New, []byte(secret))
-	_, _ = hash.Write(rawPayload)
-	mac := hash.Sum(nil)
-	signature := hex.EncodeToString(mac)
-	signature = "sha1=" + signature
-	req.Header.Set("X-Hub-Signature", signature)
+	testSignRequestHeader(req, "X-Hub-Signature", "sha1=", sha1.New, secret, rawPayload)
+}
+
+func testSignRequest256(req *http.Request, secret string, rawPayload []byte) {
+	testSignRequestHeader(req, "X-Hub-Signature-256", "sha256=", sha256.New, secret, rawPayload)
+}
+
+func testSignRequestHeader(req *http.Request, headerName, prefix string, hashFunc func() hash.Hash, secret string, rawPayload []byte) {
+	macHash := hmac.New(hashFunc, []byte(secret))
+	_, _ = macHash.Write(rawPayload)
+	mac := macHash.Sum(nil)
+	signature := prefix + hex.EncodeToString(mac)
+	req.Header.Set(headerName, signature)
 }
 
 func testGetRandomDeliveryID(t *testing.T) string {
