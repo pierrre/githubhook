@@ -3,7 +3,7 @@ package githubhook
 
 import (
 	"crypto/hmac"
-	"crypto/sha1" //nolint:gosec // GitHub uses SHA1.
+	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
