@@ -165,8 +165,7 @@ func (h *Handler) decodePayload(event string, rawPayload []byte) (any, error) {
 func (h *Handler) handleError(err error, w http.ResponseWriter, req *http.Request) {
 	var statusCode int
 	var message string
-	var reqErr *RequestError
-	if errors.As(err, &reqErr) {
+	if reqErr, ok := errors.AsType[*RequestError](err); ok {
 		statusCode = reqErr.StatusCode
 		message = reqErr.Message
 	} else {
